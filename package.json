@@ -1,0 +1,16 @@
+{
+  "name": "docuvault",
+  "version": "1.0.0",
+  "description": "DocuVault — WhatsApp PDF vault bot (Express + Groq + Oracle-ready storage)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "oci-common": "^2.142.2",
+    "oci-objectstorage": "^2.142.2",
+    "pdf-parse": "^1.1.1"
+  }
+}
