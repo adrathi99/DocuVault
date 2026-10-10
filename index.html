@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocuVault — Sign in</title>
+  <style>
+    :root {
+      --bg1: #0f0a1a; --bg2: #1c1033;
+      --surface: rgba(26, 18, 48, 0.92);
+      --border: #362a55; --text: #f2ecff; --muted: #a99cc7;
+      --accent: #a78bfa; --accent2: #f472b6;
+      --danger: #fb7185; --ok: #34d399;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      min-height: 100vh; color: var(--text);
+      background: radial-gradient(1000px 500px at 20% -10%, #2b1a55 0%, transparent 60%),
+                  radial-gradient(900px 500px at 90% 110%, #4a154b 0%, transparent 60%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .card {
+      width: 420px; max-width: 100%;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 34px 30px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .mark {
+      width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center;
+      font-size: 1.3rem; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+    .brand h1 { font-size: 1.35rem; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .step { display: none; }
+    .step.on { display: block; animation: fade 0.25s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .phoneline { display: flex; gap: 8px; }
+    select, input[type="tel"] {
+      background: #120b24; border: 1px solid var(--border); color: var(--text);
+      border-radius: 12px; padding: 13px 12px; font-size: 1rem; outline: none;
+    }
+    select:focus, input:focus { border-color: var(--accent); }
+    select { max-width: 128px; }
+    input[type="tel"] { flex: 1; min-width: 0; }
+    .btn {
+      width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 12px;
+      font-size: 1rem; font-weight: 700; cursor: pointer; color: #1a0b2e;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .msg { min-height: 22px; font-size: 0.86rem; margin-top: 12px; text-align: center; }
+    .msg.err { color: var(--danger); }
+    .msg.ok { color: var(--ok); }
+    .hint { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 14px; }
+    .hint button { background: none; border: 0; color: var(--accent); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .hint button:disabled { color: var(--muted); cursor: not-allowed; }
+    /* OTP boxes */
+    .otp { display: flex; gap: 10px; justify-content: center; margin: 6px 0 4px; }
+    .otp input {
+      width: 58px; height: 66px; text-align: center; font-size: 1.7rem; font-weight: 700;
+      background: #120b24; border: 1px solid var(--border); border-radius: 14px;
+      color: var(--text); outline: none; caret-color: var(--accent);
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+    .otp input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,0.25); }
+    .otp input.filled { border-color: var(--accent); }
+    /* timer */
+    .timer { text-align: center; margin-top: 10px; }
+    .timer .t { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.05rem; }
+    .timer .t.low { color: var(--danger); }
+    .bar { height: 6px; border-radius: 999px; background: #120b24; margin-top: 8px; overflow: hidden; }
+    .bar i { display: block; height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s linear; }
+    /* drive layout */
+    body.drive { display: block; padding: 0; }
+    .topnav {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; gap: 14px; padding: 12px 22px;
+      background: rgba(15, 10, 26, 0.9); border-bottom: 1px solid var(--border);
+    }
+    .topnav .brand { margin: 0; }
+    .topnav .brand h1 { font-size: 1.1rem; }
+    .topnav .mark { width: 34px; height: 34px; font-size: 1rem; border-radius: 10px; }
+    .search { flex: 1; max-width: 520px; display: flex; align-items: center; gap: 8px;
+      background: #120b24; border: 1px solid var(--border); border-radius: 999px; padding: 9px 16px; }
+    .search input { flex: 1; background: none; border: 0; outline: none; color: var(--text); font-size: 0.95rem; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2)); font-weight: 700; cursor: pointer; }
+    .drive-main { max-width: 1080px; margin: 0 auto; padding: 26px 22px 60px; }
+    .crumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 1.05rem; }
+    .crumbs button { background: none; border: 0; color: var(--text); font-size: 1.05rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+    .crumbs button:hover { background: #241a3d; }
+    .crumbs .sep { color: var(--muted); }
+    .crumbs .here { font-weight: 700; }
+    .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0 4px; }
+    .filters label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .filters input[type="date"] { background: #120b24; border: 1px solid var(--border); color: var(--text);
+      border-radius: 9px; padding: 8px 10px; font-size: 0.85rem; outline: none; color-scheme: dark; }
+    .filters button { background: none; border: 1px solid var(--border); color: var(--text);
+      border-radius: 9px; padding: 8px 14px; cursor: pointer; font-size: 0.82rem; }
+    .sec { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 18px 0 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .tile {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px 14px 14px; cursor: pointer; transition: transform 0.12s ease, border-color 0.12s ease;
+      min-width: 0;
+    }
+    .tile:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .tile .ic { font-size: 2rem; margin-bottom: 10px; }
+    .tile .nm { font-weight: 600; font-size: 0.92rem; overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tile .ct { color: var(--muted); font-size: 0.78rem; margin-top: 4px; }
+    .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(5, 3, 12, 0.7);
+      display: none; align-items: center; justify-content: center; padding: 24px; }
+    .overlay.open { display: flex; }
+    .modal { width: 860px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .modal .mhead { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .modal .mhead .t { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .modal iframe { flex: 1; min-height: 60vh; border: 0; background: #fff; }
+    .xbtn, .dlbtn { border-radius: 9px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .xbtn { background: none; border: 1px solid var(--border); color: var(--text); }
+    .dlbtn { background: var(--accent); border: 1px solid transparent; color: #1a0b2e; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border-radius: 50%; vertical-align: -3px;
+      border: 2px solid rgba(0,0,0,0.3); border-top-color: #1a0b2e; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <!-- STEP 1+2 : sign in -->
+  <div class="card" id="authCard">
+    <div class="brand"><div class="mark">📄</div><h1>DocuVault</h1></div>
+    <p class="sub">Your documents, secured by WhatsApp OTP.</p>
+
+    <div class="step on" id="stepPhone">
+      <label>WhatsApp number</label>
+      <div class="phoneline">
+        <select id="cc"></select>
+        <input type="tel" id="phone" placeholder="96808 50226" autocomplete="tel" />
+      </div>
+      <button class="btn" id="sendCode">Send OTP</button>
+      <div class="msg" id="msg1"></div>
+    </div>
+
+    <div class="step" id="stepOtp">
+      <label>Enter 4-digit code <span id="sentTo" style="text-transform:none"></span></label>
+      <div class="otp" id="otpRow">
+        <input inputmode="numeric" maxlength="1" aria-label="digit 1" />
+        <input inputmode="numeric" maxlength="1" aria-label="digit 2" />
+        <input inputmode="numeric" maxlength="1" aria-label="digit 3" />
+        <input inputmode="numeric" maxlength="1" aria-label="digit 4" />
+      </div>
+      <div class="timer"><span class="t" id="clock">3:00</span><div class="bar"><i id="tbar" style="width:100%"></i></div></div>
+      <button class="btn" id="verify">Verify &amp; sign in</button>
+      <div class="hint"><button id="changeNum">← change number</button> · <button id="resend" disabled>Resend code (<span id="rcount">30</span>s)</button></div>
+      <div class="msg" id="msg2"></div>
+    </div>
+
+    <div id="signupBox" style="margin-top:22px;border-top:1px solid var(--border);padding-top:18px">
+      <label>New to DocuVault? Create your account</label>
+      <div class="phoneline" style="margin-bottom:8px">
+        <input id="suName" placeholder="Your name" style="flex:1;min-width:0;background:#120b24;border:1px solid var(--border);color:var(--text);border-radius:12px;padding:13px 12px;font-size:1rem;outline:none" />
+      </div>
+      <div class="phoneline">
+        <select id="cc2"></select>
+        <input type="tel" id="suPhone" placeholder="WhatsApp number" autocomplete="tel" />
+      </div>
+      <button class="btn ghost" id="signupBtn">Sign up via WhatsApp</button>
+      <div class="msg" id="msg3"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 : drive -->
+  <div id="drive" style="display:none">
+    <nav class="topnav">
+      <div class="brand"><div class="mark">📄</div><h1>DocuVault</h1></div>
+      <div class="search">🔍<input id="q" placeholder="Search in vault" autocomplete="off" /></div>
+      <div class="avatar" id="avatar" title="Sign out">?</div>
+    </nav>
+    <main class="drive-main">
+      <div class="crumbs" id="crumbs"></div>
+      <div class="filters">
+        <label>From</label><input type="date" id="dFrom" />
+        <label>To</label><input type="date" id="dTo" />
+        <button id="dClear">Clear</button>
+      </div>
+      <div id="results"></div>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="mhead"><span class="t" id="mTitle"></span><a class="dlbtn" id="mDl" href="#">Download</a><button class="xbtn" id="mClose">Close</button></div>
+      <iframe id="mFrame" title="preview"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const CC = [["India +91","91"],["United States +1","1"],["United Kingdom +44","44"],["UAE +971","971"],["Singapore +65","65"],["Australia +61","61"],["Canada +1","1"],["Germany +49","49"],["France +33","33"],["Spain +34","34"],["Italy +39","39"],["Netherlands +31","31"],["Brazil +55","55"],["South Africa +27","27"],["Saudi Arabia +966","966"],["Qatar +974","974"],["Kuwait +965","965"],["Oman +968","968"],["Bahrain +973","973"],["Malaysia +60","60"],["Indonesia +62","62"],["Philippines +63","63"],["Thailand +66","66"],["Vietnam +84","84"],["Japan +81","81"],["South Korea +82","82"],["China +86","86"],["Hong Kong +852","852"],["New Zealand +64","64"],["Ireland +353","353"],["Sweden +46","46"],["Norway +47","47"],["Mexico +52","52"],["Argentina +54","54"]];
+    const ccSel = $("cc");
+    const cc2Sel = $("cc2");
+    CC.forEach(([label, code]) => {
+      const o = document.createElement("option");
+      o.value = code; o.textContent = label;
+      if (code === "91") o.selected = true;
+      ccSel.appendChild(o);
+      cc2Sel.appendChild(o.cloneNode(true));
+    });
+
+    let auth = JSON.parse(sessionStorage.getItem("dv-auth") || "null");
+    let otpExp = 0, tick = null, resendTick = null;
+
+    const fullNumber = () => ccSel.value + $("phone").value.replace(/\D/g, "");
+    const setMsg = (el, text, cls) => { el.textContent = text; el.className = "msg " + (cls || ""); };
+    const busy = (btn, on, label) => {
+      btn.disabled = on;
+      btn.innerHTML = on ? '<span class="spinner"></span> ' + label : label;
+      btn.dataset.label = btn.dataset.label || btn.textContent;
+      if (!on) btn.textContent = btn.dataset.label;
+    };
+
+    function fmt(ms) {
+      const s = Math.max(0, Math.ceil(ms / 1000));
+      return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+    function startTimer(total) {
+      clearInterval(tick);
+      const clock = $("clock"), bar = $("tbar");
+      const draw = () => {
+        const left = otpExp - Date.now();
+        clock.textContent = fmt(left);
+        clock.classList.toggle("low", left < 30000);
+        bar.style.width = Math.max(0, (left / total) * 100) + "%";
+        if (left <= 0) { clearInterval(tick); setMsg($("msg2"), "Code expired — tap Resend.", "err"); }
+      };
+      draw(); tick = setInterval(draw, 1000);
+    }
+    function startResendCooldown(sec) {
+      const btn = $("resend");
+      clearInterval(resendTick);
+      btn.disabled = true;
+      let left = sec;
+      $("rcount").textContent = left;
+      resendTick = setInterval(() => {
+        left -= 1; $("rcount").textContent = left;
+        if (left <= 0) { clearInterval(resendTick); btn.disabled = false; btn.innerHTML = "Resend code"; }
+      }, 1000);
+    }
+
+    async function requestCode(isResend) {
+      const from = fullNumber();
+      if ($("phone").value.replace(/\D/g, "").length < 7) { setMsg($("msg1"), "Enter a valid phone number.", "err"); return; }
+      busy($("sendCode"), true, "Sending…");
+      try {
+        const res = await fetch("/otp/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ from }) });
+        const data = await res.json();
+        if (!data.ok) { setMsg($("msg1"), data.error || "Failed to send code.", "err"); return; }
+        otpExp = data.exp;
+        $("stepPhone").classList.remove("on"); $("stepOtp").classList.add("on");
+        $("sentTo").textContent = "sent to +" + from;
+        otpInputs[0].focus();
+        setMsg($("msg2"), isResend ? "New code sent." : "", "ok");
+        startTimer(3 * 60 * 1000); startResendCooldown(30);
+      } catch { setMsg($("msg1"), "Could not reach server.", "err"); }
+      finally { busy($("sendCode"), false); }
+    }
+    $("sendCode").addEventListener("click", () => requestCode(false));
+    $("resend").addEventListener("click", () => requestCode(true));
+    $("changeNum").addEventListener("click", () => {
+      clearInterval(tick);
+      $("stepOtp").classList.remove("on"); $("stepPhone").classList.add("on");
+      otpInputs.forEach((i) => { i.value = ""; i.classList.remove("filled"); });
+    });
+
+    // OTP boxes: auto-advance, backspace nav, paste fill, auto-submit
+    const otpInputs = [...document.querySelectorAll("#otpRow input")];
+    otpInputs.forEach((inp, i) => {
+      inp.addEventListener("input", () => {
+        inp.value = inp.value.replace(/\D/g, "").slice(0, 1);
+        inp.classList.toggle("filled", !!inp.value);
+        if (inp.value && i < 3) otpInputs[i + 1].focus();
+        if (otpInputs.every((x) => x.value)) verify();
+      });
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !inp.value && i > 0) otpInputs[i - 1].focus();
+      });
+      inp.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const d = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4).split("");
+        d.forEach((ch, j) => { if (otpInputs[j]) { otpInputs[j].value = ch; otpInputs[j].classList.add("filled"); } });
+        (otpInputs[Math.min(d.length, 3)] || otpInputs[3]).focus();
+        if (otpInputs.every((x) => x.value)) verify();
+      });
+    });
+
+    async function verify() {
+      const code = otpInputs.map((x) => x.value).join("");
+      if (code.length < 4) return;
+      if (Date.now() > otpExp) { setMsg($("msg2"), "Code expired — tap Resend.", "err"); return; }
+      busy($("verify"), true, "Verifying…");
+      try {
+        const res = await fetch("/otp/verify", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ from: fullNumber(), code }) });
+        const data = await res.json();
+        if (!data.ok) { setMsg($("msg2"), data.error || "Verification failed.", "err"); return; }
+        auth = { from: fullNumber(), token: data.token };
+        sessionStorage.setItem("dv-auth", JSON.stringify(auth));
+        clearInterval(tick);
+        loadDocs();
+      } catch { setMsg($("msg2"), "Could not reach server.", "err"); }
+      finally { busy($("verify"), false); }
+    }
+    $("verify").addEventListener("click", verify);
+
+    let allDocs = [], curFolder = null;
+
+    function pdfUrl(d, dl) {
+      return "/pdf?from=" + encodeURIComponent(auth.from) + "&id=" + encodeURIComponent(d.id) +
+        "&token=" + encodeURIComponent(auth.token) + (dl ? "&download=1" : "");
+    }
+    const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    function folderKey(d) {
+      const m = /^(\d{4})-(\d{2})/.exec(d.savedAt || "");
+      return m ? m[1] + "-" + m[2] : "undated";
+    }
+    function folderLabel(key) {
+      const m = /^(\d{4})-(\d{2})$/.exec(key);
+      if (!m) return "Undated";
+      return MONTHS[parseInt(m[2], 10) - 1] + " " + m[1];
+    }
+    function inRange(d) {
+      const day = (d.savedAt || "").slice(0, 10);
+      const f = $("dFrom").value, t = $("dTo").value;
+      if (!day) return !f && !t;
+      if (f && day < f) return false;
+      if (t && day > t) return false;
+      return true;
+    }
+
+    function render() {
+      const q = $("q").value.trim().toLowerCase();
+      const crumbs = $("crumbs"), box = $("results");
+      let list = allDocs.filter((d) => inRange(d) && (!q || (d.title || "").toLowerCase().includes(q)));
+      if (curFolder) {
+        crumbs.innerHTML = `<button id="goRoot">My Vault</button><span class="sep">›</span><span class="here">${escapeHtml(folderLabel(curFolder))}</span>`;
+        $("goRoot").addEventListener("click", () => { curFolder = null; render(); });
+        list = list.filter((d) => folderKey(d) === curFolder);
+        box.innerHTML = `<div class="sec">Files</div>` + tiles(list);
+      } else {
+        crumbs.innerHTML = `<span class="here">My Vault</span>`;
+        const groups = {};
+        list.forEach((d) => { const f = folderKey(d); (groups[f] = groups[f] || []).push(d); });
+        const folders = Object.keys(groups).sort((a, b) =>
+          a === "undated" ? 1 : b === "undated" ? -1 : b.localeCompare(a));
+        let html = "";
+        if (folders.length > 1 || (folders.length === 1 && !q)) {
+          html += `<div class="sec">Folders</div><div class="grid">` + folders.map((f) =>
+            `<div class="tile" data-folder="${escapeHtml(f)}"><div class="ic">📁</div><div class="nm">${escapeHtml(folderLabel(f))}</div><div class="ct">${groups[f].length} item${groups[f].length > 1 ? "s" : ""}</div></div>`
+          ).join("") + `</div>`;
+        }
+        html += `<div class="sec">Files</div>` + tiles(list);
+        box.innerHTML = html || '<p class="sub">Vault is empty. Send a PDF on WhatsApp to start.</p>';
+        box.querySelectorAll("[data-folder]").forEach((t) => {
+          t.addEventListener("click", () => { curFolder = t.dataset.folder; render(); });
+        });
+      }
+      box.querySelectorAll("[data-open]").forEach((t) => {
+        t.addEventListener("click", () => openPreview(t.dataset.open));
+      });
+    }
+    function tiles(list) {
+      if (!list.length) return '<p class="sub">Nothing here.</p>';
+      const fdate = (iso) => { try { return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); } catch { return ""; } };
+      return `<div class="grid">` + list.map((d) =>
+        `<div class="tile" data-open="${escapeHtml(d.id)}"><div class="ic">📕</div><div class="nm">${escapeHtml(d.title || d.id)}</div><div class="ct">Stored ${escapeHtml(fdate(d.savedAt))}</div></div>`
+      ).join("") + `</div>`;
+    }
+    function openPreview(id) {
+      const d = allDocs.find((x) => x.id === id);
+      if (!d) return;
+      $("mTitle").textContent = d.title || d.id;
+      $("mFrame").src = pdfUrl(d, false);
+      $("mDl").href = pdfUrl(d, true);
+      $("overlay").classList.add("open");
+    }
+    $("mClose").addEventListener("click", () => { $("overlay").classList.remove("open"); $("mFrame").src = ""; });
+    $("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) { $("overlay").classList.remove("open"); $("mFrame").src = ""; } });
+    $("q").addEventListener("input", render);
+    $("dFrom").addEventListener("change", render);
+    $("dTo").addEventListener("change", render);
+    $("dClear").addEventListener("click", () => { $("dFrom").value = ""; $("dTo").value = ""; render(); });
+
+    async function loadDocs() {
+      if (!auth) return;
+      $("authCard").style.display = "none";
+      $("drive").style.display = "block";
+      document.body.classList.add("drive");
+      $("avatar").textContent = "+" + auth.from.slice(-2);
+      $("avatar").title = "Signed in as +" + auth.from + " — click to sign out";
+      const box = $("results");
+      box.innerHTML = '<p class="sub">Loading…</p>';
+      try {
+        const res = await fetch("/docs?from=" + encodeURIComponent(auth.from), { headers: { "x-authtoken": auth.token } });
+        if (res.status === 401) return logout("Session expired — sign in again.");
+        const data = await res.json();
+        allDocs = data.docs || [];
+        curFolder = null; $("q").value = "";
+        render();
+      } catch { box.innerHTML = '<p class="sub">Could not reach server.</p>'; }
+    }
+    function logout(msg) {
+      auth = null; allDocs = []; curFolder = null;
+      sessionStorage.removeItem("dv-auth");
+      $("drive").style.display = "none"; $("authCard").style.display = "block";
+      document.body.classList.remove("drive");
+      $("stepOtp").classList.remove("on"); $("stepPhone").classList.add("on");
+      if (msg) setMsg($("msg1"), msg, "err");
+    }
+    $("avatar").addEventListener("click", () => logout());
+    $("signupBtn").addEventListener("click", async () => {
+      const btn = $("signupBtn");
+      if (btn.disabled) return;
+      const from = $("cc2").value + $("suPhone").value.replace(/\D/g, "");
+      const name = $("suName").value.trim();
+      if ($("suPhone").value.replace(/\D/g, "").length < 7) { setMsg($("msg3"), "Enter a valid phone number.", "err"); return; }
+      btn.disabled = true;
+      setMsg($("msg3"), "Sending welcome message…", "");
+      try {
+        const res = await fetch("/signup", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ from, name }) });
+        const data = await res.json();
+        if (!data.ok) { setMsg($("msg3"), data.error || "Signup failed.", "err"); return; }
+        setMsg($("msg3"), "Welcome message sent on WhatsApp! Now sign in above with an OTP.", "ok");
+      } catch { setMsg($("msg3"), "Could not reach server.", "err"); }
+      finally { btn.disabled = false; }
+    });
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    }
+    if (auth) loadDocs();
+  </script>
+</body>
+</html>
